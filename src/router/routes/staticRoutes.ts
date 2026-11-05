@@ -18,24 +18,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   //   component: () => import('@views/dashboard/console/index.vue'),
   //   meta: { title: 'menus.dashboard.title' }
   // },
-  {
-    path: '/auth/login',
-    name: 'Login',
-    component: () => import('@views/auth/login/index.vue'),
-    meta: { title: 'menus.login.title', isHideTab: true }
-  },
-  {
-    path: '/auth/register',
-    name: 'Register',
-    component: () => import('@views/auth/register/index.vue'),
-    meta: { title: 'menus.register.title', isHideTab: true }
-  },
-  {
-    path: '/auth/forget-password',
-    name: 'ForgetPassword',
-    component: () => import('@views/auth/forget-password/index.vue'),
-    meta: { title: 'menus.forgetPassword.title', isHideTab: true }
-  },
+  // 说明：项目已移除登录 / 注册 / 忘记密码页面，打开系统后由路由守卫自动登录并直接进入后台。
   {
     path: '/403',
     name: 'Exception403',

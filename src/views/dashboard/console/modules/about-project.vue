@@ -10,7 +10,7 @@
           class="w-60 flex-cb h-12.5 px-3.5 border border-g-300 c-p rounded-lg text-sm bg-g-100 duration-300 hover:-translate-y-1 max-sm:w-full"
           v-for="link in linkList"
           :key="link.label"
-          @click="goPage(link.url)"
+          @click="goPage(link.path)"
         >
           <span class="text-g-700">{{ link.label }}</span>
           <ArtSvgIcon icon="ri:arrow-right-s-line" class="text-lg text-g-600" />
@@ -23,22 +23,23 @@
 
 <script setup lang="ts">
   import AppConfig from '@/config'
-  import { WEB_LINKS } from '@/utils/constants'
 
+  const router = useRouter()
   const systemName = AppConfig.systemInfo.name
 
+  // 项目改为内网运行，快捷入口全部指向系统内部页面
   const linkList = [
-    { label: '项目官网', url: WEB_LINKS.DOCS },
-    { label: '文档', url: WEB_LINKS.INTRODUCE },
-    { label: 'Github', url: WEB_LINKS.GITHUB_HOME },
-    { label: '哔哩哔哩', url: WEB_LINKS.BILIBILI }
+    { label: '用户管理', path: '/system/user' },
+    { label: '角色管理', path: '/system/role' },
+    { label: '菜单管理', path: '/system/menu' },
+    { label: '个人中心', path: '/system/user-center' }
   ]
 
   /**
-   * 在新标签页中打开指定 URL
-   * @param url 要打开的网页地址
+   * 跳转到系统内部页面
+   * @param path 目标路由地址
    */
-  const goPage = (url: string): void => {
-    window.open(url, '_blank', 'noopener,noreferrer')
+  const goPage = (path: string): void => {
+    router.push(path)
   }
 </script>

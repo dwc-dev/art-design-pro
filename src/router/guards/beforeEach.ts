@@ -25,7 +25,7 @@
  *
  * ## 工作流程
  *
- * 1. 检查登录状态，未登录跳转到登录页
+ * 1. 检查登录状态，未登录时自动登录（项目已移除登录页）
  * 2. 首次访问时获取用户信息和菜单数据
  * 3. 根据权限动态注册路由
  * 4. 设置页面标题和工作标签页
@@ -43,12 +43,11 @@ import { useUserStore } from '@/store/modules/user'
 import { useMenuStore } from '@/store/modules/menu'
 import { setWorktab } from '@/utils/navigation'
 import { setPageTitle } from '@/utils/router'
-import { RoutesAlias } from '../routesAlias'
 import { staticRoutes } from '../routes/staticRoutes'
 import { loadingService } from '@/utils/ui'
 import { useCommon } from '@/hooks/core/useCommon'
 import { useWorktabStore } from '@/store/modules/worktab'
-import { fetchGetUserInfo } from '@/api/auth'
+import { fetchLogin, fetchGetUserInfo } from '@/api/auth'
 import { ApiStatus } from '@/utils/http/status'
 import { isHttpError } from '@/utils/http/error'
 import { RouteRegistry, MenuProcessor, IframeRouteManager, RoutePermissionValidator } from '../core'
@@ -68,6 +67,18 @@ let routeInitFailed = false
 
 // 路由初始化进行中标记，防止并发请求
 let routeInitInProgress = false
+
+/**
+ * 自动登录账号
+ * 项目已移除登录页，进入系统时使用该账号自动完成登录（仅用于内网 Mock 环境）
+ */
+const AUTO_LOGIN_ACCOUNT: Api.Auth.LoginParams = {
+  userName: 'Super',
+  password: '123456'
+}
+
+// 自动登录进行中的 Promise，避免并发导航时重复请求
+let autoLoginPromise: Promise<void> | null = null
 
 /**
  * 获取 pendingLoading 状态
@@ -151,8 +162,13 @@ async function handleRouteGuard(
     NProgress.start()
   }
 
-  // 1. 检查登录状态
-  if (!handleLoginStatus(to, userStore, next)) {
+  // 1. 检查登录状态（项目已移除登录页：未登录时自动登录后直接进入系统）
+  try {
+    await ensureLogin(userStore)
+  } catch (error) {
+    console.error('[RouteGuard] 自动登录失败:', error)
+    closeLoading()
+    next({ name: 'Exception500', replace: true })
     return
   }
 
@@ -198,26 +214,38 @@ async function handleRouteGuard(
 }
 
 /**
- * 处理登录状态
- * @returns true 表示可以继续，false 表示已处理跳转
+ * 确保已登录
+ *
+ * 项目已移除登录页，首次进入系统或令牌失效时，
+ * 自动使用固定账号完成登录，然后继续原有的动态路由初始化流程。
  */
-function handleLoginStatus(
-  to: RouteLocationNormalized,
-  userStore: ReturnType<typeof useUserStore>,
-  next: NavigationGuardNext
-): boolean {
-  // 已登录或访问登录页或静态路由，直接放行
-  if (userStore.isLogin || to.path === RoutesAlias.Login || isStaticRoute(to.path)) {
-    return true
+async function ensureLogin(userStore: ReturnType<typeof useUserStore>): Promise<void> {
+  if (userStore.isLogin && userStore.accessToken) {
+    return
   }
 
-  // 未登录且访问需要权限的页面，跳转到登录页并携带 redirect 参数
-  userStore.logOut()
-  next({
-    name: 'Login',
-    query: { redirect: to.fullPath }
-  })
-  return false
+  if (!autoLoginPromise) {
+    autoLoginPromise = performAutoLogin(userStore).finally(() => {
+      autoLoginPromise = null
+    })
+  }
+
+  await autoLoginPromise
+}
+
+/**
+ * 执行自动登录
+ */
+async function performAutoLogin(userStore: ReturnType<typeof useUserStore>): Promise<void> {
+  const { token, refreshToken } = await fetchLogin(AUTO_LOGIN_ACCOUNT)
+
+  if (!token) {
+    throw new Error('自动登录失败：未获取到 token')
+  }
+
+  userStore.setToken(token, refreshToken)
+  userStore.setLoginStatus(true)
+  console.info('[RouteGuard] 自动登录成功，已直接进入系统')
 }
 
 /**
@@ -377,8 +405,10 @@ async function fetchUserInfo(): Promise<void> {
 
 /**
  * 重置路由相关状态
+ * @param delay 延迟时间（毫秒）
+ * @param onReset 路由状态清理完成后的回调（如重新导航）
  */
-export function resetRouterState(delay: number): void {
+export function resetRouterState(delay: number, onReset?: () => void): void {
   setTimeout(() => {
     routeRegistry?.unregister()
     IframeRouteManager.getInstance().clear()
@@ -389,6 +419,9 @@ export function resetRouterState(delay: number): void {
 
     // 重置路由初始化状态，允许重新登录后再次初始化
     resetRouteInitState()
+
+    // 动态路由清理完成后再执行后续导航，避免访问到已移除的路由
+    onReset?.()
   }, delay)
 }
 

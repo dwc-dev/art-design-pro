@@ -8,12 +8,16 @@ import '@styles/index.scss'                         // 样式
 import '@utils/sys/console.ts'                      // 控制台输出内容
 import { setupGlobDirectives } from './directives'
 import { setupErrorHandle } from './utils/sys/error-handle'
+import { setupOfflineIcons } from './utils/ui/iconify-loader'
 
 document.addEventListener(
   'touchstart',
   function () {},
   { passive: false }
 )
+
+// 注册离线图标集（内网环境无法访问 Iconify 在线 API）
+setupOfflineIcons()
 
 const app = createApp(App)
 initStore(app)

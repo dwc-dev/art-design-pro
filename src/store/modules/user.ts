@@ -137,7 +137,7 @@ export const useUserStore = defineStore(
 
     /**
      * 退出登录
-     * 清空所有用户相关状态并跳转到登录页
+     * 清空所有用户相关状态并回到首页（由路由守卫自动重新登录）
      * 如果是同一账号重新登录，保留工作台标签页
      */
     const logOut = () => {
@@ -164,15 +164,8 @@ export const useUserStore = defineStore(
       sessionStorage.removeItem('iframeRoutes')
       // 清空主页路径
       useMenuStore().setHomePath('')
-      // 重置路由状态
-      resetRouterState(500)
-      // 跳转到登录页，携带当前路由作为 redirect 参数
-      const currentRoute = router.currentRoute.value
-      const redirect = currentRoute.path !== '/login' ? currentRoute.fullPath : undefined
-      router.push({
-        name: 'Login',
-        query: redirect ? { redirect } : undefined
-      })
+      // 重置路由状态（清理完成后再回到首页，由路由守卫自动重新登录）
+      resetRouterState(500, () => router.push('/'))
     }
 
     /**

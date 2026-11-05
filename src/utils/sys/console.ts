@@ -1,13 +1,9 @@
-// ANSI 转义码生成网站  https://patorjk.com/software/taag/#p=display&f=Big&t=ABB%0A
-const asciiArt = `
-\x1b[32m欢迎使用 Art Design Pro！
+// 控制台启动信息（内网版）
+const message = `
+\x1b[32mArt Design Pro 内网版已启动
 \x1b[0m
-\x1b[36m哇！你居然在用我的项目～ 好用的话别忘了去 GitHub 点个 ★Star 呀，你的支持就是我更新的超强动力！祝使用体验满分💯
-\x1b[0m
-\x1b[33mGitHub: https://github.com/Daymychen/art-design-pro
-\x1b[0m
-\x1b[31m技术支持（QQ群）: 1038930070，和开发者一起交流～ 群里有小伙伴实时答疑，遇到问题不用慌！
+\x1b[36m数据由本地 FastAPI Mock 服务提供，如需调整数据请修改 art-design-pro-server/mock_data.py
 \x1b[0m
 `
 
-console.log(asciiArt)
+console.log(message)

@@ -91,15 +91,6 @@
           <ElButton type="primary" class="w-full mt-2" @click="handleUnlock" v-ripple>
             {{ $t('lockScreen.unlock.btnText') }}
           </ElButton>
-          <div class="w-full text-center">
-            <ElButton
-              text
-              class="mt-2.5 !text-g-600 hover:!text-theme hover:!bg-transparent"
-              @click="toLogin"
-            >
-              {{ $t('lockScreen.unlock.backBtnText') }}
-            </ElButton>
-          </div>
         </ElForm>
       </div>
     </div>
@@ -397,10 +388,6 @@
         console.error('表单验证失败:', fields)
       }
     })
-  }
-
-  const toLogin = () => {
-    userStore.logOut()
   }
 
   const openLockScreen = () => {
