@@ -29,11 +29,12 @@ github-repos/
 
 ## 环境要求
 
-| 环境    | 版本       |
-| ------- | ---------- |
-| Node.js | >= 20.19.0 |
-| pnpm    | >= 8.8.0   |
-| Python  | >= 3.9     |
+| 环境    | 版本                       |
+| ------- | -------------------------- |
+| Node.js | >= 20.19.0                 |
+| pnpm    | >= 8.8.0                   |
+| uv      | >= 0.9（建议使用最新版本） |
+| Python  | >= 3.9                     |
 
 内网 npm 源 / Python 源均可正常安装依赖。
 
@@ -43,14 +44,8 @@ github-repos/
 
 ```bash
 cd ../art-design-pro-server
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux / macOS
-source .venv/bin/activate
-
-pip install -r requirements.txt
-python main.py
+uv sync                # 按 uv.lock 安装依赖并创建 .venv
+uv run art-design-pro-server
 ```
 
 后端默认监听 `0.0.0.0:8000`，健康检查：`http://127.0.0.1:8000/api/health`。详细说明见同级目录下的 `art-design-pro-server/README.md`。
@@ -74,7 +69,7 @@ pnpm build
 
 ```bash
 cd ../art-design-pro-server
-python main.py
+uv run art-design-pro-server
 ```
 
 内网浏览器访问 `http://<服务器IP>:8000` 即可，无需额外 Nginx。
@@ -85,10 +80,10 @@ python main.py
 
 项目已没有登录页。路由守卫在检测到未登录时，会自动使用以下账号请求登录接口：
 
-| 配置项        | 位置                                                        |
-| ------------- | ----------------------------------------------------------- |
-| 自动登录账号  | `src/router/guards/beforeEach.ts` 中的 `AUTO_LOGIN_ACCOUNT` |
-| Mock 账号密码 | `art-design-pro-server/mock_data.py` 中的 `ACCOUNTS`        |
+| 配置项        | 位置                                                                           |
+| ------------- | ------------------------------------------------------------------------------ |
+| 自动登录账号  | `src/router/guards/beforeEach.ts` 中的 `AUTO_LOGIN_ACCOUNT`                    |
+| Mock 账号密码 | `art-design-pro-server/src/art_design_pro_server/mock_data.py` 中的 `ACCOUNTS` |
 
 默认账号：`Super / 123456`（Mock 后端返回 `R_SUPER` 角色，拥有全部菜单权限）。
 
